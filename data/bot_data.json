@@ -1,0 +1,16 @@
+{
+  "credit": {
+    "bot_name": "TwistedPuzzleScrambler",
+    "version": "v0.0.0",
+    "hosting_name": "디스호스트",
+    "hosting_url": "https://dishost.kr/",
+    "support_server": "https://discord.gg/YGQhfxKBRQ",
+    "contact": "penguinjean0421@gmail.com",
+    "developer_name": "Leo Michael Kim",
+    "developer_wca": "",
+    "developer_github": "penguinjean0421",
+    "tech_stack": "cubing.js",
+    "repository": "cube-scrambler",
+    "license": "https://mit-license.org/"
+  }
+}

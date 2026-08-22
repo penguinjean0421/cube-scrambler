@@ -1,0 +1,22 @@
+# 1. Dependency packages
+node_modules/
+
+# 2. Environment variables and security files
+.env
+
+# 3. Log files generated during bot operation
+logs/
+error-*.log
+usage-*.log
+
+# 4. Extracted statistical data
+stats.csv
+
+# 5. OS and editor auto-generated files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# 6. npm-related error logs
+npm-debug.log*

@@ -1,0 +1,110 @@
+{
+  "3x3": {
+    "name": "3x3x3 Cube",
+    "event_id": "333",
+    "event_icon": "event-333",
+    "count": 5
+  },
+  "2x2": {
+    "name": "2x2x2 Cube",
+    "event_id": "222",
+    "event_icon": "event-222",
+    "count": 5
+  },
+  "4x4": {
+    "name": "4x4x4 Cube",
+    "event_id": "444",
+    "event_icon": "event-444",
+    "count": 5
+  },
+  "5x5": {
+    "name": "5x5x5 Cube",
+    "event_id": "555",
+    "event_icon": "event-555",
+    "count": 3
+  },
+  "6x6": {
+    "name": "6x6x6 Cube",
+    "event_id": "666",
+    "event_icon": "event-666",
+    "count": 3
+  },
+  "7x7": {
+    "name": "7x7x7 Cube",
+    "event_id": "777",
+    "event_icon": "event-777",
+    "count": 3
+  },
+  "3x3 bld": {
+    "name": "3x3x3 Blindfolded",
+    "event_id": "333bf",
+    "event_icon": "event-333",
+    "count": 3
+  },
+  "3x3 fmc": {
+    "name": "3x3x3 Fewest Moves",
+    "event_id": "333fm",
+    "event_icon": "event-333fm",
+    "count": 3
+  },
+  "3x3 oh": {
+    "name": "3x3x3 One-Handed",
+    "event_id": "333oh",
+    "event_icon": "event-333oh",
+    "count": 5
+  },
+  "clock": {
+    "name": "Clock",
+    "event_id": "clock",
+    "event_icon": "event-clock",
+    "count": 5
+  },
+  "megaminx": {
+    "name": "Megaminx",
+    "event_id": "minx",
+    "event_icon": "event-minx",
+    "count": 5
+  },
+  "pyraminx": {
+    "name": "Pyraminx",
+    "event_id": "pyram",
+    "event_icon": "event-pyram",
+    "count": 5
+  },
+  "skewb": {
+    "name": "Skewb",
+    "event_id": "skewb",
+    "event_icon": "event-skewb",
+    "count": 5
+  },
+  "sq1": {
+    "name": "Square-1",
+    "event_id": "sq1",
+    "event_icon": "event-sq1",
+    "count": 5
+  },
+  "4x4 bld": {
+    "name": "4x4x4 Blindfolded",
+    "event_id": "444bf",
+    "event_icon": "event-444bf",
+    "count": 3
+  },
+  "5x5 bld": {
+    "name": "5x5x5 Blindfolded",
+    "event_id": "555bf",
+    "event_icon": "event-555bf",
+    "count": 3
+  },
+  "3x3 mbld": {
+    "name": "3x3x3 Multi-Blind",
+    "event_id": "333mbf",
+    "event_icon": "event-333mbf",
+    "count": 3
+  },
+  "fto": {
+    "name": "Face-Turning Octahedron",
+    "event_id": "fto",
+    "event_icon": "unofficial-fto",
+    "count": 5
+  }
+}
