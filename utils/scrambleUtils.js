@@ -93,7 +93,7 @@ async function processScramble(interaction, event, isSet = false, customCount = 
         scrambleText = await generateScrambleText(event);
       }
 
-      embed.setTitle(`${eventName} Scramble`);
+      embed.setTitle(`Scramble`);
       embed.setDescription(`\`\`\`\n${scrambleText}\n\`\`\``);
     }
     else {
@@ -104,7 +104,7 @@ async function processScramble(interaction, event, isSet = false, customCount = 
         return await interaction.editReply("⚠️ 멀티블라인드 세트 개수는 최소 3개 이상이어야 합니다.");
       }
 
-      embed.setTitle(`${eventName} Scramble Set`);
+      embed.setTitle(`Scramble Set`);
 
       for (let i = 0; i < setCount; i++) {
         let setScrambleText = "";
