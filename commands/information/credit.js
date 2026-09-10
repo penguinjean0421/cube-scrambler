@@ -16,10 +16,10 @@ module.exports = {
       .addFields(
         { name: 'Version', value: `\`${data.version}\` (Production)`, inline: true },
         { name: 'Hosting', value: `Hosted by [${data.hosting_name}](${data.hosting_url})`, inline: true },
-        { name: 'Support Server', value: `[공식 서포트 서버 바로가기](${data.support_server})`, inline: false },
+        { name: 'Support Server', value: `[공식 서포트 서버 바로가기](https://discord.gg/${data.support_server})`, inline: false },
         { name: 'Contact', value: `[개발자에게 연락하기](mailto:${data.contact})`, inline: false },
-        { name: 'Developer', value: `[${data.developer_name}](https://www.worldcubeassociation.org/persons/${data.developer_wca})([@${data.developer_github}](https://github.com/${data.developer_github}))`, inline: false },
-        { name: 'Tech Stack', value: `discord.js, ${data.tech_stack}`, inline: false },
+        { name: 'Developer', value: `[${data.developer_name}](https://www.worldcubeassociation.org/persons/${data.developer_wca})`, inline: false },
+        { name: 'Tech Stack', value: `${data.tech_stack}`, inline: false },
         { name: 'Source Code', value: `[GitHub Repository](https://github.com/${data.developer_github}/${data.repository})`, inline: false },
         { name: 'License', value: `[라이선스 확인하기](${data.license})`, inline: false },
       );

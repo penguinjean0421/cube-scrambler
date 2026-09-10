@@ -39,4 +39,4 @@ for (const file of files) {
 }
 
 fs.writeFileSync(outputFile, csvContent, 'utf-8');
-console.log(`✅ 통계 추출 완료! 엑셀에서 열 수 있는 파일이 생성되었습니다: ${outputFile}`);
+console.log(`✅ 통계 추출 완료: ${outputFile}`);

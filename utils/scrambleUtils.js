@@ -1,10 +1,10 @@
 const axios = require('axios');
 const sharp = require('sharp');
 const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
-const puzzlesData = require('../data/wca_event.json');
+const puzzleData = require('../data/wca_event.json');
 const logger = require('./logger');
 
-const eventChoices = Object.entries(puzzlesData).map(([key, info]) => ({
+const eventChoices = Object.entries(puzzleData).map(([key, info]) => ({
   name: info.name || key,
   value: key
 }));
@@ -31,7 +31,7 @@ async function getEventIconURL(eventInfo) {
 async function generateScrambleText(eventKey) {
   const { randomScrambleForEvent } = await import('cubing/scramble');
 
-  const cubingEventId = puzzlesData[eventKey]?.event_id || '333';
+  const cubingEventId = puzzleData[eventKey]?.event_id || '333';
 
   try {
     const scrambleObj = await randomScrambleForEvent(cubingEventId);
@@ -52,7 +52,7 @@ async function processScramble(interaction, event, isSet = false, customCount = 
   await interaction.deferReply();
 
   try {
-    const eventInfo = puzzlesData[event];
+    const eventInfo = puzzleData[event];
 
     if (!eventInfo || !eventInfo.event_id) {
       return await interaction.editReply("⚠️ 지원하지 않는 종목이거나 데이터 매핑에 실패했습니다.");

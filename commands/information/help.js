@@ -1,6 +1,6 @@
 
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const botsData = require('../../data/bot_data.json');
+const botData = require('../../data/bot_data.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -26,7 +26,7 @@ module.exports = {
 					inline: false
 				}
 			)
-			.setFooter({ text: 'TwistedPuzzleScrambler | Node.js (discord.js)' });
+			.setFooter({ text: `${data.bot_name} | Node.js (discord.js)` });
 
 		await interaction.reply({ embeds: [embed] });
 	}

@@ -1,10 +1,10 @@
 {
   "credit": {
     "bot_name": "TwistedPuzzleScrambler",
-    "version": "v1.0,1",
+    "version": "v0.0.2",
     "hosting_name": "디스호스트",
     "hosting_url": "https://dishost.kr/",
-    "support_server": "https://discord.gg/YGQhfxKBRQ",
+    "support_server": "YGQhfxKBRQ",
     "contact": "penguinjean0421@gmail.com",
     "developer_name": "Leo Michael Kim",
     "developer_wca": "",

@@ -49,7 +49,6 @@ const infoTransport = new DailyRotateFile({
   maxFiles: '30d',
   level: 'info',
   format: winston.format.combine(
-    // winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     winston.format.timestamp({ format: getTimestampWithTimezone }),
     winston.format.json()
   )
@@ -58,7 +57,6 @@ const infoTransport = new DailyRotateFile({
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
-    // winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     winston.format.timestamp({ format: getTimestampWithTimezone }),
     winston.format.errors({ stack: true }),
     winston.format.printf(info => {
