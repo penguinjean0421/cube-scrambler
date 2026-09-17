@@ -4,13 +4,44 @@ const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const puzzleData = require('../data/wca_event.json');
 const logger = require('./logger');
 
+require('dotenv').config();
+
+const STORAGE_CHANNEL_ID = process.env.STORAGE_CHANNEL_ID;
+
+const iconCache = new Map();
+
 const eventChoices = Object.entries(puzzleData).map(([key, info]) => ({
   name: info.name || key,
   value: key
 }));
 
+async function uploadToStorageChannel(client, targetChannelId, txtContent, fileName) {
+  try {
+    const channel = await client.channels.fetch(targetChannelId);
+    if (!channel) return null;
+
+    const buffer = Buffer.from(txtContent, 'utf-8');
+    const attachment = new AttachmentBuilder(buffer, { name: fileName });
+
+    const sentMessage = await channel.send({
+      content: `📁 스크램블 파일 : \`${fileName}\``,
+      files: [attachment]
+    });
+
+    return sentMessage.attachments.first().url;
+  } catch (e) {
+    logger.error(`파일 전송 실패: ${e.message}`);
+    return null;
+  }
+}
+
 async function getEventIconURL(eventInfo) {
   const iconName = eventInfo?.event_id || '333';
+
+  if (iconCache.has(iconName)) {
+    return iconCache.get(iconName);
+  }
+
   const svgUrl = `https://raw.githubusercontent.com/cubing/icons/refs/heads/main/src/svg/${iconName === 'fto' ? "unofficial" : "event"}/${iconName}.svg`;
 
   try {
@@ -21,7 +52,10 @@ async function getEventIconURL(eventInfo) {
     const fileName = `event-${iconName}.png`;
     const attachment = new AttachmentBuilder(pngBuffer, { name: fileName });
 
-    return { attachment, fileName };
+    const result = { attachment, fileName };
+    iconCache.set(iconName, result);
+
+    return result;
   } catch (e) {
     logger.error(`아이콘 로드 실패 (종목: ${iconName}): ${e.message}`);
     return null;
@@ -48,6 +82,18 @@ async function generateScrambleText(eventKey) {
   }
 }
 
+function formatForTxt(scrambleStr, isMegaminx) {
+  if (isMegaminx) {
+    let rawStr = scrambleStr.replace(/\n/g, ' ');
+
+    return rawStr
+      .replace(/U'\s*/g, "U'\\n")
+      .replace(/(^|\s)U\s+/g, "$1U \\n")
+      .trim();
+  }
+  return scrambleStr;
+}
+
 async function processScramble(interaction, event, isSet = false, customCount = null) {
   await interaction.deferReply();
 
@@ -60,17 +106,17 @@ async function processScramble(interaction, event, isSet = false, customCount = 
 
     const eventName = eventInfo.name || "Unknown Event";
     const isMbld = (event === "3x3 mbld");
+    const isMinx = (eventInfo.event_id === 'minx');
 
     if (customCount !== null && !isMbld) {
       return await interaction.editReply("⚠️ `count` 옵션은 멀티블라인드(`3x3 mbld`) 종목에서만 사용할 수 있습니다.");
     }
 
     const embed = new EmbedBuilder().setColor('Green');
-
-    // 아이콘 로드 처리
-    const iconURL = await getEventIconURL(eventInfo);
     const files = [];
 
+    // 종목 아이콘 설정
+    const iconURL = await getEventIconURL(eventInfo);
     if (iconURL) {
       files.push(iconURL.attachment);
       embed.setAuthor({ name: eventName, iconURL: `attachment://${iconURL.fileName}` });
@@ -78,25 +124,28 @@ async function processScramble(interaction, event, isSet = false, customCount = 
       embed.setAuthor({ name: eventName });
     }
 
+    let txtContent = "";
+    let scrambleTextForDisplay = "";
+
     if (!isSet) {
-      let scrambleText = "";
       if (isMbld) {
         const targetCount = customCount !== null ? customCount : 5;
         if (targetCount < 3) return await interaction.editReply("⚠️ 멀티블라인드 큐브 개수는 최소 3개 이상이어야 합니다.");
 
-        const scrambles = [];
-        for (let i = 0; i < targetCount; i++) {
-          scrambles.push(await generateScrambleText(event));
-        }
-        scrambleText = scrambles.map((s, i) => `${i + 1}. ${s}`).join("\n\n");
+        const rawScrambles = await Promise.all(
+          Array.from({ length: targetCount }, () => generateScrambleText(event))
+        );
+
+        scrambleTextForDisplay = rawScrambles.map((s, i) => `${i + 1}. ${s}`).join("\n\n");
+        txtContent = " " + rawScrambles.map((s, i) => `${i + 1}. ${formatForTxt(s, isMinx)}`).join("\\n");
       } else {
-        scrambleText = await generateScrambleText(event);
+        const singleScramble = await generateScrambleText(event);
+        scrambleTextForDisplay = singleScramble;
+        txtContent = formatForTxt(singleScramble, isMinx);
       }
 
       embed.setTitle(`Scramble`);
-      embed.setDescription(`\`\`\`\n${scrambleText}\n\`\`\``);
-    }
-    else {
+    } else {
       const defaultSetCount = eventInfo.count || 5;
       let setCount = customCount !== null ? customCount : defaultSetCount;
 
@@ -106,17 +155,53 @@ async function processScramble(interaction, event, isSet = false, customCount = 
 
       embed.setTitle(`Scramble Set`);
 
-      for (let i = 0; i < setCount; i++) {
-        let setScrambleText = "";
+      const setPromises = Array.from({ length: setCount }, async (_, i) => {
+        let displayScrambleText = "";
+        let txtScrambleText = "";
+
         if (isMbld) {
-          const sessionScrambles = [];
-          for (let j = 0; j < 5; j++) sessionScrambles.push(await generateScrambleText(event));
-          setScrambleText = sessionScrambles.map((s, idx) => `${idx + 1}. ${s}`).join("\n");
+          const sessionScrambles = await Promise.all(
+            Array.from({ length: 5 }, () => generateScrambleText(event))
+          );
+          displayScrambleText = sessionScrambles.map((s, idx) => `${idx + 1}. ${s}`).join("\n");
+          txtScrambleText = " " + sessionScrambles.map((s, idx) => `${idx + 1}. ${formatForTxt(s, isMinx)}`).join("\\n");
         } else {
-          setScrambleText = await generateScrambleText(event);
+          const singleScramble = await generateScrambleText(event);
+          displayScrambleText = singleScramble;
+          txtScrambleText = formatForTxt(singleScramble, isMinx);
         }
-        embed.addFields({ name: `Set ${i + 1}`, value: `\`\`\`\n${setScrambleText}\n\`\`\``, inline: false });
+
+        return { setIndex: i + 1, displayScrambleText, txtScrambleText };
+      });
+
+      const results = await Promise.all(setPromises);
+      const txtLines = [];
+
+      for (const { setIndex, displayScrambleText, txtScrambleText } of results) {
+        embed.addFields({ name: `Set ${setIndex}`, value: `\`\`\`\n${displayScrambleText}\n\`\`\``, inline: false });
+        txtLines.push(`${txtScrambleText}`);
       }
+
+      txtContent = txtLines.join("\n\n");
+    }
+
+    const now = new Date();
+    const date = `${String(now.getUTCFullYear()).slice(-2)}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}_${String(now.getUTCHours()).padStart(2, '0')}-${String(now.getUTCMinutes()).padStart(2, '0')}-${String(now.getUTCSeconds()).padStart(2, '0')}`
+    const userName = interaction.user.username.replace(/[\/\\?%*:|"<>\s]/g, '_')
+
+    const txtFileName = `${date}_${userName}_${eventInfo.event_id}_scramble.txt`;
+
+    const fileUrl = await uploadToStorageChannel(interaction.client, STORAGE_CHANNEL_ID, txtContent, txtFileName);
+
+    let downloadPrefix = "";
+    if (fileUrl) {
+      downloadPrefix = `📥 [스크램블 txt 파일 다운로드](${fileUrl})\n`;
+    }
+
+    if (!isSet) {
+      embed.setDescription(`${downloadPrefix}\`\`\`\n${scrambleTextForDisplay}\n\`\`\``);
+    } else {
+      if (downloadPrefix) embed.setDescription(downloadPrefix);
     }
 
     embed.setFooter({ text: `요청자: ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
