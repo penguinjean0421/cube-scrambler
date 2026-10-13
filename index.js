@@ -89,6 +89,7 @@ client.on(Events.InteractionCreate, async interaction => {
 		const options = interaction.options.data.map(opt => `${opt.name}:${opt.value}`).join(', ');
 
 		logger.info('command_usage', {
+			timestamp: interaction.createdAt.toISOString().replace('T', ' '),
 			username: interaction.user.tag,
 			userId: interaction.user.id,
 			command: interaction.commandName,

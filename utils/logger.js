@@ -11,22 +11,22 @@ if (!fs.existsSync(logDirectory)) {
 const getTimestampWithTimezone = () => {
   const now = new Date();
 
-  const offsetMinutes = now.getTimezoneOffset();
-  const absOffset = Math.abs(offsetMinutes);
-  const offsetHours = String(Math.floor(absOffset / 60)).padStart(2, '0');
-  const offsetMins = String(absOffset % 60).padStart(2, '0');
-  const sign = offsetMinutes > 0 ? '-' : '+';
-  const timezone = `${sign}${offsetHours}:${offsetMins}`;
+  const year = now.getUTCFullYear();
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(now.getUTCDate()).padStart(2, '0');
+  const hours = String(now.getUTCHours()).padStart(2, '0');
+  const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(now.getUTCSeconds()).padStart(2, '0');
 
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} ${timezone}`;
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} +00:00`;
 };
+
+const interactionTimestamp = winston.format((info) => {
+  if (!info.timestamp) {
+    info.timestamp = getTimestampWithTimezone();
+  }
+  return info;
+});
 
 // 1. 에러 로그 파일 설정 (7일 보관)
 const errorTransport = new DailyRotateFile({
@@ -37,6 +37,7 @@ const errorTransport = new DailyRotateFile({
   maxSize: '20m',
   maxFiles: '7d',
   level: 'error',
+  utc: true,
 });
 
 // 2. 통계(사용량) 로그 파일 설정 (30일 보관)
@@ -48,8 +49,9 @@ const infoTransport = new DailyRotateFile({
   maxSize: '20m',
   maxFiles: '30d',
   level: 'info',
+  utc: true,
   format: winston.format.combine(
-    winston.format.timestamp({ format: getTimestampWithTimezone }),
+    interactionTimestamp(),
     winston.format.json()
   )
 });
@@ -57,7 +59,7 @@ const infoTransport = new DailyRotateFile({
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
-    winston.format.timestamp({ format: getTimestampWithTimezone }),
+    interactionTimestamp(),
     winston.format.errors({ stack: true }),
     winston.format.printf(info => {
       const stackStr = info.stack ? `\n${info.stack}` : '';
@@ -67,12 +69,6 @@ const logger = winston.createLogger({
   transports: [
     errorTransport,
     infoTransport,
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      )
-    })
   ],
 });
 

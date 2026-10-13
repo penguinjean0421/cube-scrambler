@@ -15,7 +15,7 @@ const eventChoices = Object.entries(puzzleData).map(([key, info]) => ({
   value: key
 }));
 
-async function uploadToStorageChannel(client, targetChannelId, txtContent, fileName) {
+async function uploadToStorageChannel(client, targetChannelId, txtContent, fileName, metaData = {}) {
   try {
     const channel = await client.channels.fetch(targetChannelId);
     if (!channel) return null;
@@ -23,11 +23,14 @@ async function uploadToStorageChannel(client, targetChannelId, txtContent, fileN
     const buffer = Buffer.from(txtContent, 'utf-8');
     const attachment = new AttachmentBuilder(buffer, { name: fileName });
 
-    const sentMessage = await channel.send({
-      content: `📁 스크램블 파일 : \`${fileName}\``,
-      files: [attachment]
-    });
+    const date = `${metaData.date.slice(0, 4)}-${metaData.date.slice(4, 6)}-${metaData.date.slice(6, 8)}`;
+    const time = `${metaData.time.slice(0, 2)}:${metaData.time.slice(2, 4)}:${metaData.time.slice(4, 6)} UTC`;
+    const user = `${metaData.name}(${metaData.id})`;
+    const event = metaData.event
+    const contentText = [`날짜: ${date} ${time}`, `실행자: ${user || '알수 없음'}`, `종목: ${event || '알 수 없음'}`].join('\n');
 
+
+    const sentMessage = await channel.send({ content: `📁 스크램블 파일\n${contentText}`, files: [attachment] });
     return sentMessage.attachments.first().url;
   } catch (e) {
     logger.error(`파일 전송 실패: ${e.message}`);
@@ -185,13 +188,21 @@ async function processScramble(interaction, event, isSet = false, customCount = 
       txtContent = txtLines.join("\n\n");
     }
 
-    const now = new Date();
-    const date = `${String(now.getUTCFullYear()).slice(-2)}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}_${String(now.getUTCHours()).padStart(2, '0')}-${String(now.getUTCMinutes()).padStart(2, '0')}-${String(now.getUTCSeconds()).padStart(2, '0')}`
+    const now = interaction.createdAt;
+    const date = `${now.getUTCFullYear()}${String(now.getUTCMonth() + 1).padStart(2, '0')}${String(now.getUTCDate()).padStart(2, '0')}`;
+    const time = `${String(now.getUTCHours()).padStart(2, '0')}${String(now.getUTCMinutes()).padStart(2, '0')}${String(now.getUTCSeconds()).padStart(2, '0')}Z`;
     const userName = interaction.user.username.replace(/[\/\\?%*:|"<>\s]/g, '_')
 
-    const txtFileName = `${date}_${userName}_${eventInfo.event_id}_scramble.txt`;
+    const txtFileName = `${date}-${time}-${userName}-${eventInfo.event_id}.txt`;
+    const metaData = {
+      date: date,
+      time: time,
+      name: interaction.user.username,
+      id: interaction.user.id,
+      event: eventInfo.name
+    }
 
-    const fileUrl = await uploadToStorageChannel(interaction.client, STORAGE_CHANNEL_ID, txtContent, txtFileName);
+    const fileUrl = await uploadToStorageChannel(interaction.client, STORAGE_CHANNEL_ID, txtContent, txtFileName, metaData);
 
     let downloadPrefix = "";
     if (fileUrl) {
@@ -204,7 +215,11 @@ async function processScramble(interaction, event, isSet = false, customCount = 
       if (downloadPrefix) embed.setDescription(downloadPrefix);
     }
 
-    embed.setFooter({ text: `요청자: ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
+
+    embed.setFooter({
+      text: `요청자: ${interaction.user.tag} | 시간: ${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)} ${time.slice(0, 2)}:${time.slice(2, 4)}:${time.slice(4, 6)} UTC`,
+      iconURL: interaction.user.displayAvatarURL()
+    });
     await interaction.editReply({ embeds: [embed], files: files });
 
   } catch (e) {
